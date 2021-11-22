@@ -1,0 +1,37 @@
+name: Python package
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10']
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        set -euxo pipefail
+        python -m pip install --upgrade pip
+        pip install codecov tox tox-gh-actions
+
+    - name: Lint
+      run: |
+        set -euxo pipefail
+        tox -e flake8
+
+    - name: Test
+      run: |
+        set -euxo pipefail
+        tox -e py

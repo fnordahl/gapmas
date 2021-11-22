@@ -1,11 +1,11 @@
 # Copyright 2021 Frode Nordahl
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,7 +15,6 @@
 
 import os
 import typing
-import sys
 
 
 # GitHub
@@ -35,7 +34,7 @@ def get_download_urls(
         owner: str,
         repo: str,
         auth: requests.auth.HTTPBasicAuth,
-        ) -> typing.List[typing.Dict[str,str]]:
+        ) -> typing.List[typing.Dict[str, str]]:
     """Get download urls for GitHub Actions runner binaries."""
     url = GH_BASE_URL + f'/repos/{owner}/{repo}/actions/runners/downloads'
     r = requests.get(url, auth=auth)
@@ -61,7 +60,7 @@ def list_runners(
         owner: str,
         repo: str,
         auth: requests.auth.HTTPBasicAuth,
-        ) -> typing.List[typing.Optional[typing.Dict[str,any]]]:
+        ) -> typing.List[typing.Optional[typing.Dict[str, any]]]:
     """List self-hosted runners for a repository."""
     url = GH_BASE_URL + f'/repos/{owner}/{repo}/actions/runners'
     r = requests.get(url, auth=auth)
@@ -73,7 +72,7 @@ def create_token(
         owner: str,
         repo: str,
         auth: requests.auth.HTTPBasicAuth,
-        ) -> typing.Dict[str,str]:
+        ) -> typing.Dict[str, str]:
     """Create registration token."""
     url = GH_BASE_URL
     url += f'/repos/{owner}/{repo}/actions/runners/registration-token'
@@ -85,8 +84,8 @@ def list_runs(
         owner: str,
         repo: str,
         auth: requests.auth.HTTPBasicAuth,
-        status: typing.Optional[str]=None,
-        ) -> typing.List[typing.Dict[str,any]]:
+        status: typing.Optional[str] = None,
+        ) -> typing.List[typing.Dict[str, any]]:
     """List workflow runs."""
     url = GH_BASE_URL
     url += f'/repos/{owner}/{repo}/actions/runs'
@@ -98,10 +97,9 @@ def list_runs(
 
 
 # OpenStack
-import base64
-import openstack
-import pprint
-import textwrap
+import base64     # noqa - pending split into separate module.
+import openstack  # noqa - pending split into separate module.
+import textwrap   # noqa - pending split into separate module.
 
 
 OS_KEY_NAME = os.environ['OS_KEY_NAME']
@@ -112,22 +110,22 @@ OS_TAG = os.environ.get('OS_TAG', 'gapmas')
 def find_image(
         conn: openstack.connection.Connection,
         os_version: str,
-        architecture: str='x86_64',
-        os_distro: str='ubuntu'
+        architecture: str = 'x86_64',
+        os_distro: str = 'ubuntu'
         ) -> openstack.image.v2.image.Image:
     candidates = {image.properties['version_name']: image
                   for image in conn.image.images()
                   if (image.architecture == architecture
-                          and image.os_distro == os_distro
-                          and image.os_version == os_version
-                          and 'version_name' in image.properties)}
+                      and image.os_distro == os_distro
+                      and image.os_version == os_version
+                      and 'version_name' in image.properties)}
     return candidates[max(sorted(candidates))]
 
 
 def find_flavor(
         conn: openstack.connection.Connection,
-        minRam: int=7168,
-        minCores: int=2
+        minRam: int = 7168,
+        minCores: int = 2
         ) -> openstack.compute.v2.flavor.FlavorDetail:
     candidates = {flavor.ram: flavor
                   for flavor in conn.compute.flavors(minRam=minRam)
@@ -143,8 +141,8 @@ def create_runner(
         run_id: str,
         token: str,
         download_url: str,
-        tag: str=OS_TAG,
-        name: typing.Optional[str]='',
+        tag: str = OS_TAG,
+        name: typing.Optional[str] = '',
         ) -> openstack.compute.v2.server.Server:
     script = bytes(textwrap.dedent(f"""#!/bin/bash
         echo 'https_proxy=http://squid.internal:3128' >> /etc/environment
