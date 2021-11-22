@@ -43,34 +43,23 @@ How
 
 #. Set up Environment variables
 
-   * `GH_ORG`
+   .. list-table:: Environment variables
 
-     The GitHub organization the repository given in `GH_REPO` resides in.
-
-   * `GH_REPO`
-
-     Name of the GitHub repository we operate on.
-
-   * `GH_USER`
-
-     Username for authentication to the GitHub API.
-
-   * `GH_TOKEN`
-
-     GitHub Personal Access Token.
-
-   * `OS_KEY_NAME`
-
-     Name of OpenStack key pair to associate with the instances we create.
-
-   * `OS_NETWORK_NAME`
-
-     Name of OpenStack network to attach to the instances we create.
-
-   * `OS_TAG`
-
-     Tag to apply to instances.  The tool will manage the life cycle of
-     instances and uses this tag to know which instances to operate on.
+      * - `GH_ORG`
+        - The GitHub organization the repository given in `GH_REPO` resides in.
+      * - `GH_REPO`
+        - Name of the GitHub repository we operate on.
+      * - `GH_USER`
+        - Username for authentication to the GitHub API.
+      * - `GH_TOKEN`
+        - GitHub Personal Access Token.
+      * - `OS_KEY_NAME`
+        - Name of OpenStack key pair to associate with the instances we create.
+      * - `OS_NETWORK_NAME`
+        - Name of OpenStack network to attach to the instances we create.
+      * - `OS_TAG`
+        - Tag to apply to instances.  The tool will manage the life cycle of
+          instances and uses this tag to know which instances to operate on.
 
    * OpenStack client environment
 
