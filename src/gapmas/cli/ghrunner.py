@@ -96,6 +96,44 @@ def list_runs(
     return data.get('workflow_runs', [])
 
 
+def list_run_jobs(
+        owner: str,
+        repo: str,
+        auth: requests.auth.HTTPBasicAuth,
+        run_id: int,
+        ) -> typing.List[typing.Dict[str, any]]:
+    """List jobs for a workflow run."""
+    url = GH_BASE_URL
+    url += f'/repos/{owner}/{repo}/actions/runs/{run_id}/jobs'
+    r = requests.get(url, auth=auth)
+    data = json.loads(r.text)
+    return data.get('jobs', [])
+
+
+class JobLabels(typing.NamedTuple):
+    id: int
+    labels: typing.List[str]
+
+
+def get_queued_self_hosted_jobs(
+        owner: str,
+        repo: str,
+        auth: requests.auth.HTTPBasicAuth,
+        run_id: int,
+        ) -> typing.Generator[JobLabels, None, None]:
+    """Get queued jobs destined for self-hosted runners.
+
+    Provides tuple with job_id and a list of labels.
+    """
+    for job in list_run_jobs(owner, repo, auth, run_id):
+        if 'self-hosted' in job['labels']:
+            yield JobLabels(
+                    job['id'],
+                    [label
+                     for label in job['labels']
+                     if label != 'self-hosted'])  # filter 'self-hosted' label.
+
+
 # OpenStack
 import base64     # noqa - pending split into separate module.
 import openstack  # noqa - pending split into separate module.
