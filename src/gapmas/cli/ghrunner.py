@@ -224,12 +224,16 @@ def main():
         # re-create them.
         running_servers[server.name] = server
     for run in list_runs(GH_ORG, GH_REPO, GH_AUTH, status='queued'):
-        instance_name = f'{OS_TAG}-{GH_ORG}-{GH_REPO}-{run["id"]}'
-        if instance_name in running_servers:
-            print(f"Runner {instance_name} already exists, skip.")
-            continue
-        token = create_token(GH_ORG, GH_REPO, GH_AUTH)['token']
-        runner_url = get_download_url(GH_ORG, GH_REPO, GH_AUTH, 'linux', 'x64')
-        server = create_runner(conn, OS_KEY_NAME, GH_ORG, GH_REPO, run['id'],
-                               token, runner_url, name=instance_name)
-        print(server)
+        for job in get_queued_self_hosted_jobs(
+                GH_ORG, GH_REPO, GH_AUTH, run['id']):
+            instance_name = f'{OS_TAG}-{GH_ORG}-{GH_REPO}-{run["id"]}-{job.id}'
+            if instance_name in running_servers:
+                print(f"Runner {instance_name} already exists, skip.")
+                continue
+            token = create_token(GH_ORG, GH_REPO, GH_AUTH)['token']
+            runner_url = get_download_url(GH_ORG, GH_REPO, GH_AUTH, 'linux',
+                                          'x64')
+            server = create_runner(conn, OS_KEY_NAME, GH_ORG, GH_REPO,
+                                   run['id'], token, runner_url,
+                                   name=instance_name, labels=job.labels)
+            print(server)
