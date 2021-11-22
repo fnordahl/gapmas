@@ -181,11 +181,26 @@ def create_runner(
         download_url: str,
         tag: str = OS_TAG,
         name: typing.Optional[str] = '',
+        labels: typing.Optional[typing.List[str]] = None,
         ) -> openstack.compute.v2.server.Server:
+    for label in labels:
+        try:
+            (distro, version) = label.split('-')
+            image = find_image(conn, version, os_distro=distro)
+            # The user data script automatically adds distro-version label
+            labels.remove(label)
+            break
+        except ValueError:
+            # No image found or the label is not suitable for finding image
+            pass
+    else:
+        image = find_image(conn, '20.04')
     script = bytes(textwrap.dedent(f"""#!/bin/bash
         echo 'https_proxy=http://squid.internal:3128' >> /etc/environment
         echo 'http_proxy=http://squid.internal:3128' >> /etc/environment
 
+        DISTRO_RELEASE_LABEL=$(lsb_release -si | tr '[:upper:]' '[:lower:]')
+        DISTRO_RELEASE_LABEL+="-$(lsb_release -sr)"
         DIR=$(sudo -u ubuntu mktemp -d)
         cd $DIR
         sudo -u ubuntu wget -O runner.tar.gz {download_url}
@@ -193,11 +208,11 @@ def create_runner(
         sudo -u ubuntu ./config.sh \
                 --url https://github.com/{GH_ORG}/{GH_REPO} \
                 --token {token} \
+                --labels $DISTRO_RELEASE_LABEL,{','.join(labels)} \
                 --ephemeral
         sudo -u ubuntu ./run.sh
         poweroff
         """), encoding='utf-8')
-    image = find_image(conn, '21.10')
     flavor = find_flavor(conn)
     network = conn.network.find_network(OS_NETWORK_NAME)
     return conn.compute.create_server(
