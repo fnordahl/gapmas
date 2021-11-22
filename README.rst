@@ -17,76 +17,79 @@
 GitHub Actions Poll Mode AutoScaler (GAPMAS)
 =============================================
 
-* What
+What
+----
 
-  GitHub Actions Poll Mode AutoScaler, or GAPMAS, is a simple tool that helps
-  you run ephemeral GitHub Actions self-hosted runners on your own
-  infrastructure.
+GitHub Actions Poll Mode AutoScaler, or GAPMAS, is a simple tool that helps
+you run ephemeral GitHub Actions self-hosted runners on your own
+infrastructure.
 
-* Why
+Why
+---
 
-  * Simplicity
+* Simplicity
+  
+  Minimal infrastructure is required to use the tool, in its simplest form
+  this could be managed from a crontab entry on any Linux machine.
 
-    Minimal infrastructure is required to use the tool, in its simplest form
-    this could be managed from a crontab entry on any Linux machine.
+* Poll vs. Push
+  
+  The tool reaches out to the GitHub API to look for any queued jobs.  The
+  benefit of this approach is that you don't need any service exposed to the
+  internet for this to work.
 
-  * Poll vs. Push
+How
+---
 
-    The tool reaches out to the GitHub API to look for any queued jobs.  The
-    benefit of this approach is that you don't need any service exposed to the
-    internet for this to work.
+#. Set up Environment variables
 
-* How
+   * `GH_ORG`
 
-  #. Set up Environment variables
+     The GitHub organization the repository given in `GH_REPO` resides in.
 
-    * `GH_ORG`
+   * `GH_REPO`
 
-      The GitHub organization the repository given in `GH_REPO` resides in.
+     Name of the GitHub repository we operate on.
 
-    * `GH_REPO`
+   * `GH_USER`
 
-      Name of the GitHub repository we operate on.
+     Username for authentication to the GitHub API.
 
-    * `GH_USER`
+   * `GH_TOKEN`
 
-      Username for authentication to the GitHub API.
+     GitHub Personal Access Token.
 
-    * `GH_TOKEN`
+   * `OS_KEY_NAME`
 
-      GitHub Personal Access Token.
+     Name of OpenStack key pair to associate with the instances we create.
 
-    * `OS_KEY_NAME`
+   * `OS_NETWORK_NAME`
 
-      Name of OpenStack key pair to associate with the instances we create.
+     Name of OpenStack network to attach to the instances we create.
 
-    * `OS_NETWORK_NAME`
+   * `OS_TAG`
 
-      Name of OpenStack network to attach to the instances we create.
+     Tag to apply to instances.  The tool will manage the life cycle of
+     instances and uses this tag to know which instances to operate on.
 
-    * `OS_TAG`
+   * OpenStack client environment
 
-      Tag to apply to instances.  The tool will manage the life cycle of
-      instances and uses this tag to know which instances to operate on.
+     * The OpenStack provider makes use of the standard OpenStack environment
+       variables for authentication.
 
-    * OpenStack client environment
+#. Set up a job manager to run the tool periodically
 
-      * The OpenStack provider makes use of the standard OpenStack environment
-        variables for authentication.
+   * When a change is proposed to a repository with workflows destined to
+     self-hosted runners, GitHub will queue the job until a runner consumes
+     it.
 
-  #. Set up a job manager to run the tool periodically
+   * The tool makes use of this behavior to create new runners whenever there
+     are jobs queued.
 
-    * When a change is proposed to a repository with workflows destined to
-      self-hosted runners, GitHub will queue the job until a runner consumes
-      it.
+   * As such choose a cadence for the run which is in line with how long you
+     would expect to wait before your jobs start.
 
-    * The tool makes use of this behavior to create new runners whenever there
-      are jobs queued.
+#. Create workflow in repository
 
-    * As such choose a cadence for the run which is in line with how long you
-      would expect to wait before your jobs start.
-
-  #. Create workflow in repository
-
-    * Workflow jobs with 'self-hosted' as the first label in `runs-on` will be
-      scheduled for self hosted runners.
+   * Workflow jobs with 'self-hosted' as the first label in `runs-on` will be
+     scheduled for self hosted runners.
