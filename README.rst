@@ -41,23 +41,33 @@ Why
 How
 ---
 
+#. Create GitHub Personal Access Token
+
+   * Personal Access Tokens are associated with a GitHub Account.
+
+   * The account itself needs Admin level permissions to the repository you
+     want to manage runners for.
+
+   * The personal access token requires the ``public_repo`` scope.
+
 #. Set up Environment variables
 
    .. list-table:: Environment variables
 
-      * - `GH_ORG`
-        - The GitHub organization the repository given in `GH_REPO` resides in.
-      * - `GH_REPO`
+      * - ``GH_ORG``
+        - The GitHub organization the repository given in ``GH_REPO`` resides
+          in.
+      * - ``GH_REPO``
         - Name of the GitHub repository we operate on.
-      * - `GH_USER`
+      * - ``GH_USER``
         - Username for authentication to the GitHub API.
-      * - `GH_TOKEN`
+      * - ``GH_TOKEN``
         - GitHub Personal Access Token.
-      * - `OS_KEY_NAME`
+      * - ``OS_KEY_NAME``
         - Name of OpenStack key pair to associate with the instances we create.
-      * - `OS_NETWORK_NAME`
+      * - ``OS_NETWORK_NAME``
         - Name of OpenStack network to attach to the instances we create.
-      * - `OS_TAG`
+      * - ``OS_TAG``
         - Tag to apply to instances.  The tool will manage the life cycle of
           instances and uses this tag to know which instances to operate on.
 
@@ -80,5 +90,27 @@ How
 
 #. Create workflow in repository
 
-   * Workflow jobs with 'self-hosted' as the first label in `runs-on` will be
+   * Workflow jobs with 'self-hosted' as the first label in ``runs-on`` will be
      scheduled for self hosted runners.
+
+   * Labels on the form 'distro-release' will be used as input for what type
+     of image you want the job to run on.  Example:
+
+     .. code-block:: yaml
+
+        name: Take out tests
+
+        on:
+          - push
+          - pull_request
+
+        jobs:
+          hello:
+            runs-on: [self-hosted, ubuntu-21.10]
+            steps:
+              - name: hello
+                run: |
+                  echo "Hello, world!"
+
+   * If an image matching the requested distro/release can not be found the
+     tool will fall back to look for a Ubuntu 20.04 image.
